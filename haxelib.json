@@ -1,0 +1,13 @@
+{
+	"name": "ghost-ui",
+	"url" : "https://github.com/AlsoGhostglowDev/Ghost-UI",
+	"license": "MIT",
+	"tags": ["openfl", "flash", "neko", "cpp", "android", "ios", "cross", "ui"],
+	"description": "a Flixel-powered UI for developers that are looking for a sleek and clean UI look.",
+	"version": "1.0.0",
+	"releasenote": "Initial Release",
+	"contributors": ["ghostglowdev"],
+	"dependencies": {
+		"flixel": ""
+	}
+}
