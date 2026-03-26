@@ -1,5 +1,6 @@
 package ghostui;
 
+import sys.io.File;
 import flixel.math.FlxRect;
 using haxe.EnumTools.EnumValueTools;
 
@@ -82,6 +83,25 @@ class GhostUISpreadsheet extends BasicUI {
                 lowerCell.cellHeight = lowerCell.cellHeight + (_oldHeight - cell.cellHeight);
         }
     }
+
+    public function exportToCSV(?filepath:String) {
+        var csvRaw:String = '';
+        for (y in 1...sheetHeight + 1) {
+            for (x in 1...sheetWidth + 1) {
+				csvRaw += getCell(x, y).text;
+				if (x != sheetWidth)
+					csvRaw += ','; 
+            }
+            csvRaw += '\n';
+        }
+
+        if (filepath != null) {
+            try { File.saveContent('$filepath.csv', csvRaw); }
+            catch(e) trace('ERROR: $e');
+        }
+
+        return csvRaw;
+    }
 }
 
 @:access(ghostui.UITheme)
@@ -93,6 +113,10 @@ class GhostUICell extends BasicUI {
     public var coordinates:CellData = CellData.COORDINATE(0, 0);
     public var parentSpreadsheet:Null<GhostUISpreadsheet>;
 
+    // attributes
+    public var bold(default, set):Bool;
+	public var italic(default, set):Bool;
+
 	var colors:MouseInteractableColors = {};
     var canBeSelected:Bool = true;
 
@@ -101,6 +125,18 @@ class GhostUICell extends BasicUI {
     
     function set_text(value:String):String {
         label.text = value;
+        return text = value;
+    }
+
+	function set_bold(value:Bool):Bool {
+        bold = value;
+        refreshFont();
+        return value;
+    }
+
+	function set_italic(value:Bool):Bool {
+        italic = value;
+		refreshFont();
         return value;
     }
 
@@ -125,6 +161,7 @@ class GhostUICell extends BasicUI {
 		bgOutline.makeGraphic(Std.int(newWidth), Std.int(newHeight), 0x0);
 		bgOutline.drawRect(0, 0, newWidth, newHeight, 0x0, {thickness: 2, color: UITheme.buttonOutline});
 
+        label.fieldWidth = newWidth;
 		label.clipRect = new FlxRect(0, 0, bg.width, bg.height);
     }
 
@@ -152,10 +189,24 @@ class GhostUICell extends BasicUI {
 		@:bypassAccessor this.cellHeight = height;
     }
 
+    override function update(elapsed:Float) {
+        super.update(elapsed);
+
+		label.clipRect.setPosition(bg.x - label.x, bg.y - label.y);
+    }
+
     public function getCoordinates(axis:CoordinateAxis):Int {
         return switch (axis) {
             case HORIZONTAL: coordinates.getParameters()[0];
 			case VERTICAL: coordinates.getParameters()[1];   
         }
+    }
+
+    public function refreshFont():String {
+        var font = haxe.io.Path.withoutExtension(Config.labelFont);
+		final ext = haxe.io.Path.extension(Config.labelFont);
+        if (bold) font += '-Bold';
+        if (italic) font += '-Italic';
+        return label.font = '$font.$ext';
     }
 }
